@@ -6,12 +6,12 @@ export const getPost = async (req, res) => {
     const post = await Post.findById(req.params.id);
 
     if (!post) {
-      return res.status(404).json({ msg: "Post does not exist." });
+      return res.status(404).json({ error: "Post does not exist." });
     }
 
     res.status(200).json({ post });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -20,21 +20,21 @@ export const deletePost = async (req, res) => {
     const post = await Post.findById(req.params.id);
 
     if (!post) {
-      return res.status(404).json({ message: "Post does not exist." });
+      return res.status(404).json({ error: "Post does not exist." });
     }
 
     // check if the user who is deleting is the one who posted
     if (post.postedBy.toString() != req.user._id.toString()) {
       return res
         .status(401)
-        .json({ message: "You can only delete your own post." });
+        .json({ error: "You can only delete your own post." });
     }
 
     await Post.findByIdAndDelete(req.params.id);
 
     res.status(200).json({ message: "DELETED" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -45,17 +45,17 @@ export const createPost = async (req, res) => {
     if (!postedBy || !text) {
       return res
         .status(400)
-        .json({ message: "PostedBy and text fields are required" });
+        .json({ error: "PostedBy and text fields are required" });
     }
 
     const user = await User.findById(postedBy);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ error: "User not found" });
     }
 
     if (user._id.toString() != req.user._id.toString()) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
     const maxLength = 500;
@@ -63,7 +63,7 @@ export const createPost = async (req, res) => {
     if (text.length > maxLength) {
       return res
         .status(400)
-        .json({ message: `Text must be less than ${maxLength} characters` });
+        .json({ error: `Text must be less than ${maxLength} characters` });
     }
 
     const newPost = new Post({
@@ -76,7 +76,7 @@ export const createPost = async (req, res) => {
 
     res.status(201).json({ message: "Posted!", newPost });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -88,7 +88,7 @@ export const likeUnlike = async (req, res) => {
     const post = await Post.findById(postId);
 
     if (!post) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(404).json({ error: "Post not found" });
     }
 
     const userLikedPost = post.likes.includes(userId);
@@ -103,7 +103,7 @@ export const likeUnlike = async (req, res) => {
       res.status(200).json({ message: "Post liked!" });
     }
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -118,11 +118,11 @@ export const replyToPost = async (req, res) => {
     const post = await Post.findById(postId);
 
     if (!text) {
-      return res.status(400).json({ message: "Please enter a reply" });
+      return res.status(400).json({ error: "Please enter a reply" });
     }
 
     if (!post) {
-      return res.status(404).json({ message: "Post not found" });
+      return res.status(404).json({ error: "Post not found" });
     }
 
     const reply = {
@@ -138,7 +138,7 @@ export const replyToPost = async (req, res) => {
     res.status(200).json({ message: "Reply added successfully", post });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -148,7 +148,7 @@ export const getFeed = async (req, res) => {
     const user = await User.findById(userId);
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+      return res.status(404).json({ error: "User not found" });
     }
 
     const following = user.following;
@@ -159,6 +159,6 @@ export const getFeed = async (req, res) => {
 
     res.status(200).json({ message: "Posts fetched successfully", posts });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ error: error.message });
   }
 };
