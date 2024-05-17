@@ -75,13 +75,13 @@ export const logout = (req, res) => {
   }
 };
 
+// todo check
 export const followUnfollowUser = async (req, res) => {
   try {
-    const { id } = req.params;
     const userToModify = User.findById(id);
     const currentUser = User.findById(req.user._id);
 
-    if (id === req.user._id)
+    if (req.params.id === req.user._id)
       return res
         .status(400)
         .json({ message: "You cannot follow/unfollow yourself!" });
@@ -89,7 +89,7 @@ export const followUnfollowUser = async (req, res) => {
     if (!userToModify || !currentUser)
       return res.status(400).json({ message: "User not found!" });
 
-    const isFollowing = currentUser.following.includes(id);
+    const isFollowing = currentUser.following.includes(req.params.id);
 
     if (isFollowing) {
       await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });

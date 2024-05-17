@@ -20,10 +20,6 @@ const postSchema = mongoose.Schema(
       ref: "User",
       default: [],
     },
-    totalLikes: {
-      type: Number,
-      default: 0,
-    },
     replies: [
       {
         userId: {
