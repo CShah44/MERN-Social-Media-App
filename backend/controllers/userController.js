@@ -83,10 +83,11 @@ export const logout = (req, res) => {
 // todo check
 export const followUnfollowUser = async (req, res) => {
   try {
-    const userToModify = User.findById(id);
-    const currentUser = User.findById(req.user._id);
+    const { id } = req.params;
+    const userToModify = await User.findById(id);
+    const currentUser = await User.findById(req.user._id);
 
-    if (req.params.id === req.user._id)
+    if (id === req.user._id)
       return res
         .status(400)
         .json({ error: "You cannot follow/unfollow yourself!" });
@@ -94,16 +95,16 @@ export const followUnfollowUser = async (req, res) => {
     if (!userToModify || !currentUser)
       return res.status(400).json({ error: "User not found!" });
 
-    const isFollowing = currentUser.following.includes(req.params.id);
+    const isFollowing = currentUser.following.includes(id);
 
     if (isFollowing) {
       await User.findByIdAndUpdate(req.user._id, { $pull: { following: id } });
       await User.findByIdAndUpdate(id, { $pull: { followers: req.user._id } });
-      req.status(200).json({ message: "Unfollow complete" });
+      res.status(200).json({ message: "Unfollow complete" });
     } else {
       await User.findByIdAndUpdate(req.user._id, { $push: { following: id } });
       await User.findByIdAndUpdate(id, { $push: { followers: req.user._id } });
-      req.status(200).json({ message: "Follow complete" });
+      res.status(200).json({ message: "Follow complete" });
     }
   } catch (e) {
     res.status(500).json({ error: e.message });

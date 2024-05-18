@@ -30,9 +30,12 @@ export default function UpdateUserPage() {
 
   const { handleImgChange, imgUrl } = usePreviewImg();
   const showToast = useShowToast();
+  const [updating, setUpdating] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (updating) return;
+    setUpdating(true);
 
     try {
       const res = await fetch(`/api/users/update/${user._id}`, {
@@ -55,6 +58,8 @@ export default function UpdateUserPage() {
       localStorage.setItem("user-threads", JSON.stringify(data));
     } catch (error) {
       showToast("Error!", error, "error");
+    } finally {
+      setUpdating(false);
     }
   };
 
@@ -169,6 +174,7 @@ export default function UpdateUserPage() {
                 bg: "green.500",
               }}
               type="submit"
+              isLoading={updating}
             >
               Submit
             </Button>
