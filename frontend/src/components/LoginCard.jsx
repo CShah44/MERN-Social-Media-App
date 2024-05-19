@@ -28,9 +28,10 @@ export default function LoginCard() {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    console.log(username, password);
+    setLoading(true);
     try {
       //send request to /api/users/login
       const response = await fetch("/api/users/login", {
@@ -56,6 +57,8 @@ export default function LoginCard() {
       setUser(data);
     } catch (error) {
       showToast("Error!", error, "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -116,6 +119,7 @@ export default function LoginCard() {
                   bg: useColorModeValue("gray.700", "gray.800"),
                 }}
                 onClick={handleLogin}
+                isLoading={loading}
               >
                 Login
               </Button>

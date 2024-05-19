@@ -7,7 +7,6 @@ const usePreviewImg = () => {
 
   const handleImgChange = (e) => {
     const file = e.target.files[0];
-    console.log(file);
 
     if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
@@ -22,7 +21,7 @@ const usePreviewImg = () => {
     }
   };
 
-  return { imgUrl, handleImgChange };
+  return { imgUrl, handleImgChange, setImgUrl };
 };
 
 export default usePreviewImg;
