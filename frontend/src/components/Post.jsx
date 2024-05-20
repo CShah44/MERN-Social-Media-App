@@ -1,17 +1,19 @@
 import { Flex, Box, Avatar, Image, Text } from "@chakra-ui/react";
 import { Link, useNavigate } from "react-router-dom";
-import { BsThreeDots } from "react-icons/bs";
 import { useEffect, useState } from "react";
 import Actions from "./Actions";
 import useShowToast from "../hooks/useShowToast";
+import { DeleteIcon } from "@chakra-ui/icons";
 
 import { formatDistanceToNow } from "date-fns";
+import { useRecoilValue } from "recoil";
+import userAtom from "../atoms/userAtom";
 
 const Post = ({ post, userId }) => {
-  // const [liked, setLiked] = useState(false);
   const [user, setUser] = useState(null);
   const showToast = useShowToast();
   const navigate = useNavigate();
+  const currentUser = useRecoilValue(userAtom);
 
   useEffect(() => {
     const getUser = async () => {
@@ -32,6 +34,29 @@ const Post = ({ post, userId }) => {
 
     getUser();
   }, [userId, showToast]);
+
+  const handleDelete = async (e) => {
+    e.preventDefault();
+
+    try {
+      // todo change this to modal
+      if (!window.confirm("Are you sure you want to delete the post?")) return;
+
+      const res = await fetch(`/api/posts/${post._id}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (data.error) {
+        return showToast("Error!", data.error, "error");
+      }
+
+      showToast("Success", "Post deleted", "success");
+    } catch (error) {
+      return showToast("Error", error, "error");
+    }
+  };
 
   if (!user) return null;
 
@@ -111,7 +136,13 @@ const Post = ({ post, userId }) => {
               >
                 {formatDistanceToNow(new Date(post.createdAt))} ago
               </Text>
-              <BsThreeDots />
+              {currentUser?._id === user._id && (
+                <DeleteIcon
+                  cursor={"pointer"}
+                  size={20}
+                  onClick={handleDelete}
+                />
+              )}
             </Flex>
           </Flex>
 

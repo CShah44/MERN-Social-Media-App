@@ -10,7 +10,7 @@ export const getPost = async (req, res) => {
       return res.status(404).json({ error: "Post does not exist." });
     }
 
-    res.status(200).json({ post });
+    res.status(200).json(post);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -47,6 +47,12 @@ export const deletePost = async (req, res) => {
       return res
         .status(401)
         .json({ error: "You can only delete your own post." });
+    }
+
+    if (post.img) {
+      const imgId = post.img.split("/").pop().split(".")[0];
+
+      await cloudinary.uploader.destroy(imgId);
     }
 
     await Post.findByIdAndDelete(req.params.id);

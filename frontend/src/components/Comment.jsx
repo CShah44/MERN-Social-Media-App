@@ -1,12 +1,10 @@
-import { Avatar, Flex, Text } from "@chakra-ui/react";
-import { BsThreeDots } from "react-icons/bs";
+import { Avatar, Divider, Flex, Text } from "@chakra-ui/react";
 
-// can add dummy props here
-const Comment = () => {
+const Comment = ({ reply, lastReply }) => {
   return (
     <>
       <Flex gap={4} py={2} my={2} w={"full"}>
-        <Avatar src="/zuck-avatar.png" size={"sm"} />
+        <Avatar src={reply.userProfilePic} size={"sm"} />
         <Flex gap={1} w={"full"} flexDirection={"column"}>
           <Flex
             w={"full"}
@@ -14,22 +12,13 @@ const Comment = () => {
             alignItems={"center"}
           >
             <Text fontSize="sm" fontWeight="bold">
-              Markzucker
+              {reply.username}
             </Text>
-            <Flex gap={2} alignItems={"center"}>
-              <Text fontSize="sm" color={"gray.light"}>
-                ID
-              </Text>
-              <BsThreeDots />
-            </Flex>
           </Flex>
-          <Text>This is a reply</Text>
-          {/* <Actions /> */}
-          <Text fontSize={"sm"} color={"gray.light"}>
-            101 likes
-          </Text>
+          <Text>{reply.text}</Text>
         </Flex>
       </Flex>
+      {!lastReply && <Divider />}
     </>
   );
 };
