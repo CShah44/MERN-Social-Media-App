@@ -52,7 +52,6 @@ export default function LoginCard() {
         return;
       }
 
-      console.log(data);
       localStorage.setItem("user-threads", JSON.stringify(data));
       setUser(data);
     } catch (error) {
@@ -111,7 +110,7 @@ export default function LoginCard() {
             </FormControl>
             <Stack spacing={10} pt={2}>
               <Button
-                loadingText="Submitting"
+                loadingText="Logging in.."
                 size="lg"
                 bg={useColorModeValue("gray.600", "gray.700")}
                 color={"white"}

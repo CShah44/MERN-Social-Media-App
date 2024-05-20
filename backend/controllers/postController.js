@@ -16,6 +16,24 @@ export const getPost = async (req, res) => {
   }
 };
 
+export const getUserPosts = async (req, res) => {
+  const { username } = req.params;
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      return res.status(404).json({ error: "User does not exist." });
+    }
+
+    const posts = await Post.find({ postedBy: user._id }).sort({
+      createdAt: -1,
+    });
+
+    res.status(200).json(posts);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const deletePost = async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
@@ -163,7 +181,7 @@ export const getFeed = async (req, res) => {
       createdAt: -1,
     });
 
-    res.status(200).json({ message: "Posts fetched successfully", posts });
+    res.status(200).json(posts);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
