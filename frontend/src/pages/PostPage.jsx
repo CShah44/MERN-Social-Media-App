@@ -10,23 +10,26 @@ import {
 } from "@chakra-ui/react";
 import Actions from "../components/Actions";
 import useGetUserProfile from "../hooks/useGetUserProfile";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useShowToast from "../hooks/useShowToast";
 import { useNavigate, useParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { DeleteIcon } from "@chakra-ui/icons";
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 import Comment from "../components/Comment";
+import postsAtom from "../atoms/postsAtom";
 
 const PostPage = () => {
   const { user, loading } = useGetUserProfile();
-  const [post, setPost] = useState();
+  const [posts, setPosts] = useRecoilState(postsAtom);
   const showToast = useShowToast();
 
   const currentUser = useRecoilValue(userAtom);
   const { pid } = useParams();
   const navigate = useNavigate();
+
+  const currentPost = posts[0];
 
   useEffect(() => {
     const getPost = async () => {
@@ -38,13 +41,13 @@ const PostPage = () => {
           return showToast("Error", data.error, "error");
         }
 
-        setPost(data);
+        setPosts([data]);
       } catch (error) {
         return showToast("Error", error, "error");
       }
     };
     getPost();
-  }, [showToast, pid]);
+  }, [showToast, pid, setPosts]);
 
   const handleDelete = async (e) => {
     e.preventDefault();
@@ -53,7 +56,7 @@ const PostPage = () => {
       // todo change this to modal
       if (!window.confirm("Are you sure you want to delete the post?")) return;
 
-      const res = await fetch(`/api/posts/${post._id}`, {
+      const res = await fetch(`/api/posts/${currentPost._id}`, {
         method: "DELETE",
       });
 
@@ -77,7 +80,7 @@ const PostPage = () => {
       </Flex>
     );
 
-  if (!post) return null;
+  if (!currentPost) return null;
 
   return (
     <>
@@ -99,7 +102,7 @@ const PostPage = () => {
             textAlign={"right"}
             color={"gray.light"}
           >
-            {formatDistanceToNow(new Date(post.createdAt))} ago
+            {formatDistanceToNow(new Date(currentPost.createdAt))} ago
           </Text>
           {currentUser?._id === user._id && (
             <DeleteIcon cursor={"pointer"} size={20} onClick={handleDelete} />
@@ -107,20 +110,20 @@ const PostPage = () => {
         </Flex>
       </Flex>
 
-      <Text my={3}>{post.text}</Text>
-      {post.img && (
+      <Text my={3}>{currentPost.text}</Text>
+      {currentPost.img && (
         <Box
           borderRadius={6}
           overflowk={"hidden"}
           border={"1px solid"}
           borderColor={"gray.light"}
         >
-          <Image src={post.img} w={"full"} />
+          <Image src={currentPost.img} w={"full"} />
         </Box>
       )}
 
       <Flex gap={3} my={3}>
-        <Actions post={post} />
+        <Actions post={currentPost} />
       </Flex>
 
       <Divider my={4} />
@@ -135,12 +138,15 @@ const PostPage = () => {
 
       <Divider my={4} />
 
-      {post.replies.map((reply) => (
+      {currentPost.replies.map((reply) => (
         <Comment
           key={reply._id}
           reply={reply}
           //check if the reply is the last reply and pass it to lastReply prop use index
-          lastReply={reply._id === post.replies[post.replies.length - 1]._id}
+          lastReply={
+            reply._id ===
+            currentPost.replies[currentPost.replies.length - 1]._id
+          }
         />
       ))}
     </>

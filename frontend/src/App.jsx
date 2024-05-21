@@ -30,11 +30,18 @@ function App() {
           path="/update"
           element={user ? <UpdateUserPage /> : <Navigate to="/auth" />}
         />
-        <Route path="/:username" element={<UserPage />} />
+        <Route
+          path="/:username"
+          element={
+            <>
+              <UserPage />
+              {user && <CreatePost />}
+            </>
+          }
+        />
         <Route path="/:username/post/:pid" element={<PostPage />} />{" "}
       </Routes>
       {user && <LogoutButton />}
-      {user && <CreatePost />}
     </Container>
   );
 }

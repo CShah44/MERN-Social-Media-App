@@ -15,17 +15,15 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilValue, useRecoilState } from "recoil";
 import userAtom from "../atoms/userAtom";
 import useShowToast from "../hooks/useShowToast";
-// import postsAtom from "../atoms/postsAtom";
+import postsAtom from "../atoms/postsAtom";
 
-const Actions = ({ post: _post }) => {
+const Actions = ({ post }) => {
   const user = useRecoilValue(userAtom);
-  const [liked, setLiked] = useState(_post.likes.includes(user?._id));
-  // const [posts, setPosts] = useRecoilState(postsAtom);
-
-  const [post, setPost] = useState(_post);
+  const [liked, setLiked] = useState(post.likes.includes(user?._id));
+  const [posts, setPosts] = useRecoilState(postsAtom);
   const [isLiking, setIsLiking] = useState(false);
   const [isReplying, setIsReplying] = useState(false);
   const [reply, setReply] = useState("");
@@ -54,24 +52,24 @@ const Actions = ({ post: _post }) => {
 
       if (!liked) {
         // add the id of the current user to post.likes array
-        // const updatedPosts = posts.map((p) => {
-        //   if (p._id === post._id) {
-        //     return { ...p, likes: [...p.likes, user._id] };
-        //   }
-        //   return p;
-        // });
-        // setPosts(updatedPosts);
-        setPost({ ...post, likes: [...post.likes, user._id] });
+        const updatedPosts = posts.map((p) => {
+          if (p._id === post._id) {
+            return { ...p, likes: [...p.likes, user._id] };
+          }
+          return p;
+        });
+        setPosts(updatedPosts);
+        // setPost({ ...post, likes: [...post.likes, user._id] });
       } else {
         // remove the id of the current user from post.likes array
-        // const updatedPosts = posts.map((p) => {
-        //   if (p._id === post._id) {
-        //     return { ...p, likes: p.likes.filter((id) => id !== user._id) };
-        //   }
-        //   return p;
-        // });
-        // setPosts(updatedPosts);
-        setPost({ ...post, likes: post.likes.filter((id) => id != user._id) });
+        const updatedPosts = posts.map((p) => {
+          if (p._id === post._id) {
+            return { ...p, likes: p.likes.filter((id) => id !== user._id) };
+          }
+          return p;
+        });
+        setPosts(updatedPosts);
+        // setPost({ ...post, likes: post.likes.filter((id) => id != user._id) });
       }
 
       setLiked(!liked);
@@ -102,15 +100,15 @@ const Actions = ({ post: _post }) => {
       const data = await res.json();
       if (data.error) return showToast("Error", data.error, "error");
 
-      // const updatedPosts = posts.map((p) => {
-      //   if (p._id === post._id) {
-      //     return { ...p, replies: [...p.replies, data] };
-      //   }
-      //   return p;
-      // });
-      // setPosts(updatedPosts);
+      const updatedPosts = posts.map((p) => {
+        if (p._id === post._id) {
+          return { ...p, replies: [...p.replies, data] };
+        }
+        return p;
+      });
+      setPosts(updatedPosts);
 
-      setPost({ ...post, replies: [...post.replies, data.reply] });
+      // setPost({ ...post, replies: [...post.replies, data.reply] });
       showToast("Success", "Reply posted successfully", "success");
       onClose();
       setReply("");
