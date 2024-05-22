@@ -5,6 +5,7 @@ import authAtom from "../atoms/authAtom";
 import { AiFillHome } from "react-icons/ai";
 import { RxAvatar } from "react-icons/rx";
 import { Link as RouterLink } from "react-router-dom";
+import { BsFillChatQuoteFill } from "react-icons/bs";
 
 const Header = () => {
   const { colorMode, toggleColorMode } = useColorMode();
@@ -32,9 +33,14 @@ const Header = () => {
         onClick={toggleColorMode}
       />
       {currentUser && (
-        <Link as={RouterLink} to={`${currentUser.username}`}>
-          <RxAvatar size={24} />
-        </Link>
+        <Flex alignItems={"center"} gap={4}>
+          <Link as={RouterLink} to={`${currentUser.username}`}>
+            <RxAvatar size={24} />
+          </Link>
+          <Link as={RouterLink} to={"/chat"}>
+            <BsFillChatQuoteFill size={20} />
+          </Link>
+        </Flex>
       )}
       {!currentUser && (
         <Link
