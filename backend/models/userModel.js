@@ -37,6 +37,11 @@ const userSchema = mongoose.Schema(
       type: String,
       default: "",
     },
+    groups: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "Conversation",
+      default: [],
+    },
   },
   {
     timestamps: true,
