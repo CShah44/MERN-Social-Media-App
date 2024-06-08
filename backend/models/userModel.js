@@ -42,6 +42,10 @@ const userSchema = mongoose.Schema(
       ref: "Conversation",
       default: [],
     },
+    keywords: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,

@@ -4,6 +4,10 @@ import bcrypt from "bcryptjs";
 import generateTokenAndSetCookie from "../utils/helpers/genTokenSetCookie.js";
 import { v2 as cloudinary } from "cloudinary";
 import mongoose from "mongoose";
+import {
+  getKeywords,
+  updateKeywordsFromText,
+} from "../AI/recommendationEngine.js";
 
 export const signupUser = async (req, res) => {
   try {
@@ -150,6 +154,8 @@ export const updateUser = async (req, res) => {
     user.username = username || user.username;
     user.bio = bio || user.bio;
     user.profilePic = profilePic || user.profilePic;
+
+    await updateKeywordsFromText(userId, bio);
 
     user = await user.save();
 

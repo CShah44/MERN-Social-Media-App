@@ -37,6 +37,7 @@ const HomePage = () => {
       {loading && (
         <Flex justify="center">
           <Spinner />
+          <Text fontSize={"sm"}>Your personalized feed is loading.</Text>
         </Flex>
       )}
       {!loading && posts.length == 0 && (

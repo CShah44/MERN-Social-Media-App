@@ -1,6 +1,10 @@
 import User from "../models/userModel.js";
 import Post from "../models/postModel.js";
 import { v2 as cloudinary } from "cloudinary";
+import {
+  personalizePosts,
+  updateKeywordsFromText,
+} from "../AI/recommendationEngine.js";
 
 export const getPost = async (req, res) => {
   try {
@@ -126,10 +130,13 @@ export const likeUnlike = async (req, res) => {
     if (userLikedPost) {
       //Unlike
       await Post.updateOne({ _id: postId }, { $pull: { likes: userId } });
+
       res.status(200).json({ message: "Post unliked!" });
     } else {
       //Like
+      await updateKeywordsFromText(userId, post.text);
       await Post.updateOne({ _id: postId }, { $push: { likes: userId } });
+
       res.status(200).json({ message: "Post liked!" });
     }
   } catch (error) {
@@ -165,6 +172,8 @@ export const replyToPost = async (req, res) => {
     post.replies.push(reply);
     post.save();
 
+    await updateKeywordsFromText(userId, post.text);
+
     res.status(200).json(reply);
   } catch (error) {
     console.log(error);
@@ -187,7 +196,9 @@ export const getFeed = async (req, res) => {
       createdAt: -1,
     });
 
-    res.status(200).json(posts);
+    const personalizedPosts = await personalizePosts(user.keywords, posts);
+    // console.log(personalizedPosts);
+    res.status(200).json(personalizedPosts);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
