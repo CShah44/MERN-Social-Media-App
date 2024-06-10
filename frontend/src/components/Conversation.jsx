@@ -14,7 +14,7 @@ import {
 // import { BsCheck2All, BsFillImageFill } from "react-icons/bs";
 // import { selectedConversationAtom } from "../atoms/messagesAtom";
 
-const Conversation = () => {
+const Conversation = ({ conversation }) => {
   //   const user = conversation.participants[0];
   //   const currentUser = useRecoilValue(userAtom);
   // const lastMessage = conversation.lastMessage;
@@ -50,11 +50,11 @@ const Conversation = () => {
 
       <Stack direction={"column"} fontSize={"sm"}>
         <Text fontWeight="700" display={"flex"} alignItems={"center"}>
-          markzuckerberg
+          {conversation.groupName}
         </Text>
-        <Text fontSize={"xs"} display={"flex"} alignItems={"center"} gap={1}>
+        {/* <Text fontSize={"xs"} display={"flex"} alignItems={"center"} gap={1}>
           Hello some message ...
-        </Text>
+        </Text> */}
       </Stack>
     </Flex>
   );

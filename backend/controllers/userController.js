@@ -178,6 +178,21 @@ export const updateUser = async (req, res) => {
   }
 };
 
+export const getFollowers = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findById(id);
+    const followers = await User.find({ _id: { $in: user.followers } }).select(
+      "-password -groups -bio -keywords"
+    );
+
+    res.status(200).json(followers);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 export const getUser = async (req, res) => {
   const { query } = req.params; //query is either username or _id
 

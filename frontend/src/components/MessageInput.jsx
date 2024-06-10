@@ -1,5 +1,5 @@
 import { Input, InputGroup, InputRightElement } from "@chakra-ui/react";
-import { IOSendSharp } from "react-icons/io";
+import { IoMdSend } from "react-icons/io";
 
 const MessageInput = () => {
   return (
@@ -8,7 +8,7 @@ const MessageInput = () => {
         <Input w={"full"} placeholder="Type a message" />
 
         <InputRightElement>
-          <IOSendSharp />
+          <IoMdSend />
         </InputRightElement>
       </InputGroup>
     </form>

@@ -1,6 +1,8 @@
 import { tokenClassification } from "@huggingface/inference";
 import User from "../models/userModel.js";
 
+// V1 recommendation engine - basic
+
 export const getKeywords = async (text) => {
   try {
     const response = await tokenClassification({
@@ -41,11 +43,19 @@ export const updateKeywordsFromText = async (userId, text) => {
   try {
     const user = await User.findById(userId);
 
+    //get and format the new keywords
     const newKeywords = await getKeywords(text);
     const formatted = newKeywords.map((n) => JSON.parse(n));
+
+    // get the old keywords
     const oldKeywords = user.keywords;
 
-    user.keywords = [...formatted, ...oldKeywords];
+    //filter the new keywords such that there are no duplicates
+    const uniqueKeywords = formatted.filter((keyword) => {
+      return !user.keywords.includes(keyword);
+    });
+
+    user.keywords = [...uniqueKeywords, ...oldKeywords];
 
     await user.save();
   } catch (error) {

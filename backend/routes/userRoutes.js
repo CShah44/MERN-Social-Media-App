@@ -1,6 +1,7 @@
 import express from "express";
 import {
   followUnfollowUser,
+  getFollowers,
   getUser,
   loginUser,
   logout,
@@ -17,5 +18,6 @@ router.post("/login", loginUser);
 router.post("/logout", logout);
 router.post("/follow/:id", protectRoute, followUnfollowUser);
 router.put("/update/:id", protectRoute, updateUser);
+router.get("/followers/:id", protectRoute, getFollowers);
 
 export default router;

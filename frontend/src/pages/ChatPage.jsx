@@ -4,23 +4,53 @@ import {
   Button,
   Flex,
   Input,
-  Skeleton,
-  SkeletonCircle,
+  Spinner,
   Text,
   useColorModeValue,
 } from "@chakra-ui/react";
 import Conversation from "../components/Conversation";
-// import { GiConversation } from "react-icons/gi";
 import MessageContainer from "../components/MessageContainer";
+import CreateConversationButton from "../components/CreateConversationButton";
+import { useRecoilState } from "recoil";
+import { conversationsAtom } from "../atoms/conversationAtom";
+import { useEffect, useState } from "react";
+import useShowToast from "../hooks/useShowToast";
 
 const ChatPage = () => {
+  const [conversations, setConversations] = useRecoilState(conversationsAtom);
+  const [loadingConv, setLoadingConv] = useState(true);
+  const showToast = useShowToast();
+
+  useEffect(() => {
+    const getConv = async () => {
+      try {
+        const response = await fetch("/api/messages/");
+        const data = await response.json();
+
+        if (data.error)
+          return showToast(
+            "Error",
+            "Couldn't fetch your conversations!",
+            "error"
+          );
+
+        setConversations(data);
+      } catch (error) {
+        showToast("Error", "Couldn't fetch your conversations!", "error");
+      } finally {
+        setLoadingConv(false);
+      }
+    };
+
+    getConv();
+  }, [setConversations, showToast]);
+
   return (
     <Box
       position={"absolute"}
       left={"50%"}
       transform={"translateX(-50%)"}
-      w={{ base: "100%", md: "80%", lg: "750px" }}
-      border={"1px solid red"}
+      w={{ base: "100%", md: "80%", lg: "850px" }}
       p={"4"}
     >
       <Flex
@@ -49,38 +79,32 @@ const ChatPage = () => {
             fontWeight={"700"}
             color={useColorModeValue("gray.600", "gray.400")}
           >
-            {" "}
             Your Conversations
           </Text>
           <form>
             <Flex alignItems={"center"} gap={2}>
               <Input placeholder="Search for chat" />
-              <Button size={"sm"}>
+              <Button size={"md"}>
                 <SearchIcon />
               </Button>
             </Flex>
           </form>
-          {true &&
-            [0, 1, 2, 3, 4].map((_, i) => {
-              <Flex
-                key={i}
-                gap={4}
-                alignItems={"center"}
-                p={"1"}
-                borderRadius={"md"}
-              >
-                <Box>
-                  <SkeletonCircle size={"10"} />
-                </Box>
-                <Flex w={"full"} flexDirection={"column"} gap={3}>
-                  <Skeleton h={"10px"} w={"80px"} />
-                  <Skeleton h={"8px"} w={"90%"} />
-                </Flex>
-              </Flex>;
-            })}
-
-          <Conversation />
-          <Conversation />
+          <Flex>
+            <CreateConversationButton />
+          </Flex>
+          {loadingConv && !conversations && (
+            <Flex>
+              <Spinner />
+            </Flex>
+          )}
+          {conversations &&
+            !loadingConv &&
+            conversations.map((c) => (
+              <Conversation conversation={c} key={c._id} />
+            ))}
+          {!loadingConv && !conversations.length && (
+            <Text size={"sm"}>You have no conversations! Create One!</Text>
+          )}
         </Flex>
         {/* <Flex
           flex={70}

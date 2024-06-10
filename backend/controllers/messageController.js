@@ -7,6 +7,12 @@ export const createConversation = async (req, res) => {
     const { participants, name } = req.body; // participants is an array of _ids
     const userId = req.user._id;
 
+    if (!participants.length || !name.length) {
+      return res
+        .status(400)
+        .json({ error: "Please provide all required fields" });
+    }
+
     participants.push(userId);
 
     const conversation = new Conversation({
