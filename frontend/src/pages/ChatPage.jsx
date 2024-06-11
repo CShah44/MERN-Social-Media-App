@@ -4,6 +4,8 @@ import {
   Button,
   Flex,
   Input,
+  InputGroup,
+  InputRightElement,
   Spinner,
   Text,
   useColorModeValue,
@@ -11,14 +13,23 @@ import {
 import Conversation from "../components/Conversation";
 import MessageContainer from "../components/MessageContainer";
 import CreateConversationButton from "../components/CreateConversationButton";
-import { useRecoilState } from "recoil";
-import { conversationsAtom } from "../atoms/conversationAtom";
+import { useRecoilState, useRecoilValue } from "recoil";
+import {
+  conversationsAtom,
+  selectedConversationAtom,
+} from "../atoms/conversationAtom";
 import { useEffect, useState } from "react";
 import useShowToast from "../hooks/useShowToast";
 
 const ChatPage = () => {
   const [conversations, setConversations] = useRecoilState(conversationsAtom);
+  const selectedConversation = useRecoilValue(selectedConversationAtom);
+
   const [loadingConv, setLoadingConv] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredConversations, setFilteredConversations] =
+    useState(conversations);
+
   const showToast = useShowToast();
 
   useEffect(() => {
@@ -44,6 +55,18 @@ const ChatPage = () => {
 
     getConv();
   }, [setConversations, showToast]);
+
+  useEffect(() => {
+    if (!searchQuery) return setFilteredConversations(conversations);
+
+    setFilteredConversations(
+      conversations?.filter((conv) =>
+        conv.groupName.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    );
+  }, [searchQuery, conversations]);
+
+  console.log("rerender"); // using that useEffect method is causing re render for search, optimise if further
 
   return (
     <Box
@@ -83,10 +106,19 @@ const ChatPage = () => {
           </Text>
           <form>
             <Flex alignItems={"center"} gap={2}>
-              <Input placeholder="Search for chat" />
-              <Button size={"md"}>
-                <SearchIcon />
-              </Button>
+              <InputGroup>
+                <Input
+                  placeholder="Search for chat"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <InputRightElement>
+                  <Button size={"md"}>
+                    <SearchIcon />
+                  </Button>
+                  {/* <Button>Clear</Button> */}
+                </InputRightElement>
+              </InputGroup>
             </Flex>
           </form>
           <Flex>
@@ -97,28 +129,34 @@ const ChatPage = () => {
               <Spinner />
             </Flex>
           )}
-          {conversations &&
+          {filteredConversations &&
             !loadingConv &&
-            conversations.map((c) => (
+            filteredConversations.map((c) => (
               <Conversation conversation={c} key={c._id} />
             ))}
-          {!loadingConv && !conversations.length && (
-            <Text size={"sm"}>You have no conversations! Create One!</Text>
+          {!searchQuery.length &&
+            !loadingConv &&
+            !filteredConversations.length && (
+              <Text size={"sm"}>You have no conversations! Create One!</Text>
+            )}
+          {searchQuery && !filteredConversations.length && (
+            <Text size={"sm"}>No conversations found!</Text>
           )}
         </Flex>
-        {/* <Flex
-          flex={70}
-          borderRadius={"md"}
-          p={2}
-          flexDir={"column"}
-          alignItems={"center"}
-          justifyContent={"center"}
-          height={"400px"}
-        >
-          <GiConversation size={100} />
-          <Text fontSize={20}>Select a conversation to start messaging</Text>
-        </Flex> */}
-        <MessageContainer />
+        {!selectedConversation && (
+          <Flex
+            flex={70}
+            borderRadius={"md"}
+            p={2}
+            flexDir={"column"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            height={"400px"}
+          >
+            <Text fontSize={20}>Select a conversation to start messaging</Text>
+          </Flex>
+        )}
+        {selectedConversation && <MessageContainer />}
       </Flex>
     </Box>
   );

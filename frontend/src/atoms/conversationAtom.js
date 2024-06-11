@@ -6,10 +6,6 @@ export const conversationsAtom = atom({
 });
 
 export const selectedConversationAtom = atom({
-  key: "selectedConversationAtom",
-  default: {
-    _id: "",
-    participants: [],
-    groupName: "",
-  },
+  key: "selectedConv",
+  default: null,
 });

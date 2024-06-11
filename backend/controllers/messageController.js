@@ -1,6 +1,7 @@
 import Conversation from "../models/conversationModel.js";
 import Message from "../models/messageModel.js";
 import User from "../models/userModel.js";
+import { v2 as cloudinary } from "cloudinary";
 
 export const createConversation = async (req, res) => {
   try {
@@ -38,23 +39,34 @@ export const createConversation = async (req, res) => {
 export const sendMessage = async (req, res) => {
   try {
     const { conversationId, text } = req.body;
+    let { img } = req.body;
 
     const conversation = await Conversation.findById(conversationId);
+    const user = await User.findById(req.user._id);
 
     if (!conversation) {
       return res.status(404).json({ error: "No such conversation found." });
     }
 
-    const newMessage = await Message({
+    if (img) {
+      const uploadedResponse = await cloudinary.uploader.upload(img);
+      img = uploadedResponse.secure_url;
+    }
+
+    const newMessage = new Message({
       text,
       sender: req.user._id,
+      name: user.name,
       conversationId: conversationId,
+      img: img || "",
     });
 
-    await newMessage.save();
-    await conversation.updateOne({
-      $set: { lastMessage: { text, sender: req.user._id } },
-    });
+    await Promise.all([
+      newMessage.save(),
+      conversation.updateOne({
+        $set: { lastMessage: { text, sender: req.user._id, name: user.name } },
+      }),
+    ]);
 
     res.status(200).json(newMessage);
   } catch (error) {
@@ -72,9 +84,11 @@ export const getMessages = async (req, res) => {
       return res.status(404).json({ error: "No group found." });
     }
 
-    const messages = await Message.find({ conversationId }).sort({
-      createdAt: 1,
-    });
+    const messages = await Message.find({ conversationId })
+      .sort({
+        createdAt: 1,
+      })
+      .populate("sender", "name profilePic username");
 
     res.status(200).json(messages);
   } catch (error) {
@@ -88,11 +102,11 @@ export const getConversations = async (req, res) => {
   try {
     const user = await User.findById(userId);
 
-    // console.log(user.groups);
-
     const conversations = await Conversation.find({
       _id: { $in: user.groups },
-    }).populate("lastMessage", "groupName");
+    })
+      .populate("lastMessage.sender", "name username")
+      .populate("participants", "name profilePic username");
 
     res.status(200).json(conversations);
   } catch (error) {

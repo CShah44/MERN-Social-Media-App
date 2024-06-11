@@ -185,7 +185,7 @@ const CreateConversationButton = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
-      <Button onClick={onOpen} size={"sm"}>
+      <Button mt="2" onClick={onOpen} size={"md"}>
         Create Conversation
       </Button>
     </>

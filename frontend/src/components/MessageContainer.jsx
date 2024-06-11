@@ -2,14 +2,46 @@ import {
   Flex,
   useColorModeValue,
   Text,
-  Avatar,
   Divider,
   Skeleton,
   SkeletonCircle,
 } from "@chakra-ui/react";
 import MessageInput from "./MessageInput";
+import { useRecoilValue } from "recoil";
+import { selectedConversationAtom } from "../atoms/conversationAtom";
+import { useEffect, useState } from "react";
+import useShowToast from "../hooks/useShowToast";
+import Message from "../components/Message";
+import userAtom from "../atoms/userAtom";
 
 const MessageContainer = () => {
+  const selectedConversation = useRecoilValue(selectedConversationAtom);
+  const user = useRecoilValue(userAtom);
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const showToast = useShowToast();
+
+  useEffect(() => {
+    const getMessages = async () => {
+      try {
+        const res = await fetch(`/api/messages/${selectedConversation._id}`);
+        const data = await res.json();
+
+        if (data.error)
+          return showToast("Error", "Could not load messages", "error");
+
+        setMessages(data);
+      } catch (error) {
+        showToast("Error", "Could not load messages", "error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    getMessages();
+  }, [showToast, selectedConversation._id]);
+
   return (
     <Flex
       flex="70"
@@ -19,15 +51,31 @@ const MessageContainer = () => {
       flexDirection={"column"}
     >
       {/* Message header */}
-      <Flex w={"full"} h={12} alignItems={"center"} gap={2}>
-        <Avatar
+      <Flex
+        w={"full"}
+        h={16}
+        alignItems={"center"}
+        justifyContent={"space-between"}
+        gap={1}
+        px="3"
+      >
+        {/* <Avatar
           src=""
-          //  src={selectedConversation.userProfilePic}
+          group photo yaha pe
           size={"sm"}
-        />
-        <Text display={"flex"} alignItems={"center"}>
-          {/* {selectedConversation.username} */}
-          markzuckerberg
+        /> */}
+        <Text
+          size="md"
+          fontWeight={"600"}
+          display={"flex"}
+          alignItems={"center"}
+        >
+          {selectedConversation.groupName}
+        </Text>
+        <Text color={"gray.500"} fontStyle={"italic"} size="xs">
+          {selectedConversation.participants
+            .map((p) => (p.name === user.name ? "You" : p.name))
+            .join(", ")}
         </Text>
       </Flex>
 
@@ -41,7 +89,7 @@ const MessageContainer = () => {
         height={"400px"}
         overflowY={"auto"}
       >
-        {true &&
+        {loading &&
           [...Array(5)].map((_, i) => (
             <Flex
               key={i}
@@ -60,9 +108,19 @@ const MessageContainer = () => {
               {i % 2 !== 0 && <SkeletonCircle size={7} />}
             </Flex>
           ))}
+
+        {!loading &&
+          messages &&
+          messages.map((m) => (
+            <Message
+              key={m._id}
+              ownMessage={m.sender.username === user.username}
+              message={m}
+            />
+          ))}
       </Flex>
 
-      <MessageInput />
+      <MessageInput setMessages={setMessages} />
     </Flex>
   );
 };
