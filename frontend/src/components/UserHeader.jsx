@@ -18,8 +18,9 @@ import { CgMoreO } from "react-icons/cg";
 import { useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 import { Link as RouterLink } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import useShowToast from "../hooks/useShowToast";
+import { useSocket } from "../context/SocketContext";
 
 const UserHeader = ({ user }) => {
   const toast = useToast();
@@ -29,6 +30,15 @@ const UserHeader = ({ user }) => {
   );
   const showToast = useShowToast();
   const [updating, setUpdating] = useState(false);
+
+  const [isOnline, setIsOnline] = useState();
+  const { onlineUsers } = useSocket();
+
+  useEffect(() => {
+    if (onlineUsers.includes(user._id)) {
+      setIsOnline(true);
+    }
+  }, [onlineUsers, user._id]);
 
   const copyURL = () => {
     const currentURL = window.location.href;
@@ -84,9 +94,12 @@ const UserHeader = ({ user }) => {
           <Text fontSize={"2xl"} fontWeight={"bold"}>
             {user.name}
           </Text>
-          <Flex gap={2} alignItems={"centers"}>
-            <Text fontSize={"sm"}>@{user.username}</Text>
-          </Flex>
+          <Text fontSize={"sm"}>@{user.username}</Text>
+          {currentUser && isOnline ? (
+            <Text fontSize={"sm"}>Online</Text>
+          ) : (
+            <Text fontSize={"sm"}>Offline</Text>
+          )}
         </Box>
         <Box>
           {user.profilePic && (
