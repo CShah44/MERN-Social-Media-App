@@ -1,6 +1,5 @@
 import {
   Avatar,
-  AvatarBadge,
   Flex,
   //   Image,
   Stack,
@@ -41,9 +40,7 @@ const Conversation = ({ conversation }) => {
             md: "md",
           }}
           src={"https://bit.ly/broken-link"}
-        >
-          <AvatarBadge boxSize="1em" bg="green.500" />{" "}
-        </Avatar>
+        />
       </WrapItem>
 
       <Stack direction={"column"} fontSize={"sm"}>
@@ -51,12 +48,14 @@ const Conversation = ({ conversation }) => {
           {conversation.groupName}
         </Text>
 
-        <Text fontSize={"xs"} display={"flex"} alignItems={"center"} gap={1}>
-          {lastMessage.sender._id === currentuser._id
-            ? "You"
-            : lastMessage.sender.name}{" "}
-          : {lastMessage.text.substring(0, 14)}
-        </Text>
+        {lastMessage && (
+          <Text fontSize={"xs"} display={"flex"} alignItems={"center"} gap={1}>
+            {lastMessage.sender._id === currentuser._id
+              ? "You"
+              : lastMessage.sender.name}{" "}
+            : {lastMessage.text.substring(0, 14)}
+          </Text>
+        )}
       </Stack>
     </Flex>
   );

@@ -8,7 +8,7 @@ import {
 } from "../atoms/conversationAtom";
 import { useRecoilValue, useSetRecoilState } from "recoil";
 
-const MessageInput = ({ setMessages }) => {
+const MessageInput = () => {
   const [messageText, setMessageText] = useState("");
   const showToast = useShowToast();
   const selectedConversation = useRecoilValue(selectedConversationAtom);
@@ -40,8 +40,6 @@ const MessageInput = ({ setMessages }) => {
         showToast("Error", data.error, "error");
         return;
       }
-
-      setMessages((messages) => [...messages, data]);
 
       setConversations((prevConvs) => {
         const updatedConversations = prevConvs.map((conversation) => {

@@ -7,8 +7,13 @@ const messageSchema = new mongoose.Schema(
       ref: "Conversation",
     },
     sender: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      _id: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      name: String,
+      profilePic: String,
+      username: String,
     },
     text: String,
     img: {

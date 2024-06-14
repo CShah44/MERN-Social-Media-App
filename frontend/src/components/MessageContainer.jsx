@@ -13,6 +13,7 @@ import { useEffect, useState } from "react";
 import useShowToast from "../hooks/useShowToast";
 import Message from "../components/Message";
 import userAtom from "../atoms/userAtom";
+import { useSocket } from "../context/SocketContext";
 
 const MessageContainer = () => {
   const selectedConversation = useRecoilValue(selectedConversationAtom);
@@ -21,6 +22,18 @@ const MessageContainer = () => {
   const [loading, setLoading] = useState(true);
 
   const showToast = useShowToast();
+
+  const { socket } = useSocket();
+
+  useEffect(() => {
+    socket.on("newMessage", (message) => {
+      if (message.conversationId === selectedConversation._id) {
+        setMessages((prev) => [...prev, message]);
+      }
+    });
+
+    return () => socket.off("newMessage");
+  }, [selectedConversation._id, socket]);
 
   useEffect(() => {
     const getMessages = async () => {
@@ -111,16 +124,10 @@ const MessageContainer = () => {
 
         {!loading &&
           messages &&
-          messages.map((m) => (
-            <Message
-              key={m._id}
-              ownMessage={m.sender.username === user.username}
-              message={m}
-            />
-          ))}
+          messages.map((m) => <Message key={m._id} message={m} />)}
       </Flex>
 
-      <MessageInput setMessages={setMessages} />
+      <MessageInput />
     </Flex>
   );
 };

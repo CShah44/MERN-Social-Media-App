@@ -2,6 +2,7 @@ import Conversation from "../models/conversationModel.js";
 import Message from "../models/messageModel.js";
 import User from "../models/userModel.js";
 import { v2 as cloudinary } from "cloudinary";
+import { getRecipientSocketId, io } from "../socket/socket.js";
 
 export const createConversation = async (req, res) => {
   try {
@@ -55,8 +56,12 @@ export const sendMessage = async (req, res) => {
 
     const newMessage = new Message({
       text,
-      sender: req.user._id,
-      name: user.name,
+      sender: {
+        _id: req.user._id,
+        name: user.name,
+        username: user.username,
+        profilePic: user.profilePic,
+      },
       conversationId: conversationId,
       img: img || "",
     });
@@ -67,6 +72,15 @@ export const sendMessage = async (req, res) => {
         $set: { lastMessage: { text, sender: req.user._id, name: user.name } },
       }),
     ]);
+
+    const participants = conversation.participants.filter((p) => p != user._id);
+
+    participants.forEach((participant) => {
+      const socketId = getRecipientSocketId(participant);
+      if (socketId) {
+        io.to(socketId).emit("newMessage", newMessage);
+      }
+    });
 
     res.status(200).json(newMessage);
   } catch (error) {
@@ -84,11 +98,9 @@ export const getMessages = async (req, res) => {
       return res.status(404).json({ error: "No group found." });
     }
 
-    const messages = await Message.find({ conversationId })
-      .sort({
-        createdAt: 1,
-      })
-      .populate("sender", "name profilePic username");
+    const messages = await Message.find({ conversationId }).sort({
+      createdAt: 1,
+    });
 
     res.status(200).json(messages);
   } catch (error) {
