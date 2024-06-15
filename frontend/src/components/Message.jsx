@@ -9,20 +9,22 @@ const Message = ({ message }) => {
   const [imgLoaded, setImgLoaded] = useState(false);
   return (
     <Flex flexDir={"column"}>
-      <Flex gap={2}>
-        <Avatar src={message.sender.profilePic} w="7" h={7} />
+      <Flex direction={"column"} gap={2}>
+        <Flex gap={2}>
+          <Avatar src={message.sender.profilePic} w="7" h={7} />
 
-        {message.text && (
-          <Text
-            maxW={"350px"}
-            bg={"gray.400"}
-            p={1}
-            borderRadius={"md"}
-            color={"black"}
-          >
-            {message.text}
-          </Text>
-        )}
+          {message.text && (
+            <Text
+              maxW={"350px"}
+              bg={"gray.400"}
+              p={1}
+              borderRadius={"md"}
+              color={"black"}
+            >
+              {message.text}
+            </Text>
+          )}
+        </Flex>
         {message.img && !imgLoaded && (
           <Flex mt={5} w={"200px"}>
             <Image
@@ -37,7 +39,7 @@ const Message = ({ message }) => {
         )}
 
         {message.img && imgLoaded && (
-          <Flex mt={5} w={"200px"}>
+          <Flex ml={9} mt={1} w={"200px"}>
             <Image src={message.img} alt="Message image" borderRadius={4} />
           </Flex>
         )}

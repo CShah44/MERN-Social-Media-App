@@ -7,6 +7,8 @@ import { getRecipientSocketId, io } from "../socket/socket.js";
 export const createConversation = async (req, res) => {
   try {
     const { participants, name } = req.body; // participants is an array of _ids
+    let { groupPhoto } = req.body;
+
     const userId = req.user._id;
 
     if (!participants.length || !name.length) {
@@ -15,12 +17,18 @@ export const createConversation = async (req, res) => {
         .json({ error: "Please provide all required fields" });
     }
 
+    if (groupPhoto) {
+      const result = await cloudinary.uploader.upload(groupPhoto);
+      groupPhoto = result.secure_url;
+    }
+
     participants.push(userId);
 
     const conversation = new Conversation({
       participants,
       groupName: name,
       createdBy: userId,
+      groupPhoto: groupPhoto || "",
     });
 
     await conversation.save();
@@ -31,9 +39,16 @@ export const createConversation = async (req, res) => {
       });
     });
 
+    await conversation.populate({
+      path: "participants",
+      model: "User",
+      select: "name username profilePic",
+    });
+
     res.status(200).json(conversation);
   } catch (e) {
-    res.status(500).json({ error: e });
+    console.log(e);
+    res.status(500).json({ error: "Could not create conversation" });
   }
 };
 
@@ -69,7 +84,13 @@ export const sendMessage = async (req, res) => {
     await Promise.all([
       newMessage.save(),
       conversation.updateOne({
-        $set: { lastMessage: { text, sender: req.user._id, name: user.name } },
+        $set: {
+          lastMessage: {
+            text: img ? "Image" : text,
+            sender: req.user._id,
+            name: user.name,
+          },
+        },
       }),
     ]);
 

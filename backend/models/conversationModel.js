@@ -12,6 +12,7 @@ const conversationSchema = new mongoose.Schema(
       text: String,
       sender: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     },
+    groupPhoto: String,
   },
   { timestamps: true }
 );

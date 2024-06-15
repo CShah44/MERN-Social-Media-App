@@ -39,7 +39,7 @@ const Conversation = ({ conversation }) => {
             sm: "sm",
             md: "md",
           }}
-          src={"https://bit.ly/broken-link"}
+          src={conversation.groupPhoto || "https://bit.ly/broken-link"}
         />
       </WrapItem>
 

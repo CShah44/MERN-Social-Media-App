@@ -28,9 +28,15 @@ export const getUserPosts = async (req, res) => {
       return res.status(404).json({ error: "User does not exist." });
     }
 
-    const posts = await Post.find({ postedBy: user._id }).sort({
-      createdAt: -1,
-    });
+    const posts = await Post.find({ postedBy: user._id })
+      .sort({
+        createdAt: -1,
+      })
+      .populate({
+        path: "repost.originalPostedBy",
+        model: "User",
+        select: "name username profilePic",
+      });
 
     res.status(200).json(posts);
   } catch (error) {
@@ -176,7 +182,52 @@ export const replyToPost = async (req, res) => {
 
     res.status(200).json(reply);
   } catch (error) {
-    console.log(error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+export const repost = async (req, res) => {
+  try {
+    const { originalPostedBy, originalPostId } = req.body;
+
+    if (!originalPostId || !originalPostedBy) {
+      return res.status(400).json({ error: "Could not repost. " });
+    }
+
+    const userId = req.user._id;
+    const user = await User.findById(userId);
+    const ogUser = await User.findById(originalPostedBy);
+
+    if (!user || !ogUser) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const ogPost = await Post.findById(originalPostId);
+
+    if (!ogPost) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    const newPost = new Post({
+      postedBy: user._id,
+      text: ogPost.text,
+      img: ogPost.img || "",
+      repost: {
+        originalPostedBy: ogUser._id,
+        originalPostId: ogPost._id,
+      },
+    });
+
+    await newPost.save();
+
+    await newPost.populate({
+      path: "repost.originalPostedBy",
+      model: "User",
+      select: "name username profilePic",
+    });
+
+    res.status(200).json(newPost);
+  } catch (error) {
     res.status(500).json({ error: error.message });
   }
 };
@@ -192,12 +243,17 @@ export const getFeed = async (req, res) => {
 
     const following = user.following;
 
-    const posts = await Post.find({ postedBy: { $in: following } }).sort({
-      createdAt: -1,
-    });
+    const posts = await Post.find({ postedBy: { $in: following } })
+      .sort({
+        createdAt: -1,
+      })
+      .populate({
+        path: "repost.originalPostedBy",
+        model: "User",
+        select: "name username profilePic",
+      });
 
     const personalizedPosts = await personalizePosts(user.keywords, posts);
-    // console.log(personalizedPosts);
     res.status(200).json(personalizedPosts);
   } catch (error) {
     res.status(500).json({ error: error.message });

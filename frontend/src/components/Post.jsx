@@ -17,6 +17,8 @@ const Post = ({ post, userId }) => {
   const currentUser = useRecoilValue(userAtom);
   const [posts, setPosts] = useRecoilState(postsAtom);
 
+  if (post.repost) console.log(post);
+
   useEffect(() => {
     const getUser = async () => {
       try {
@@ -66,13 +68,28 @@ const Post = ({ post, userId }) => {
   if (!user) return null;
 
   return (
-    <Link to={`/${user.username}/post/${post._id}`}>
-      <Flex gap={3} mb={4} py={5}>
+    <Link
+      to={`/${
+        post.repost ? post.repost.originalPostedBy.username : user.username
+      }/post/${post._id}`}
+    >
+      {post.repost && (
+        <Flex gap={2} py={2}>
+          <Text fontSize={"sm"} fontStyle={"italic"}>
+            Reposted by {user.username}
+          </Text>
+        </Flex>
+      )}
+      <Flex gap={3} mb={4} pb={5}>
         <Flex flexDirection={"column"} alignItems={"center"}>
           <Avatar
             size="md"
             name={user.name}
-            src={user.profilePic}
+            src={
+              post.repost
+                ? post.repost.originalPostedBy.profilePic
+                : user.profilePic
+            }
             onClick={(e) => {
               e.preventDefault();
               navigate(`/${user.username}`);
@@ -128,7 +145,9 @@ const Post = ({ post, userId }) => {
                   navigate(`/${user.username}`);
                 }}
               >
-                {user.username}
+                {post.repost
+                  ? post.repost.originalPostedBy.username
+                  : user.username}
               </Text>
               <Image src="/verified.png" w={4} h={4} ml={1} />
             </Flex>

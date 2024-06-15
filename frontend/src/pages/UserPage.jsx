@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-// import Post from "../components/Post";
 import UserHeader from "../components/UserHeader";
 import { useParams } from "react-router-dom";
 import useShowToast from "../hooks/useShowToast";
@@ -50,6 +49,7 @@ export default function UserPage() {
   return (
     <>
       <UserHeader user={user} />
+      <Flex my={2}></Flex>
       {!fetchingPosts && posts.length === 0 && <h1>User has not posts.</h1>}
       {fetchingPosts && (
         <Flex justifyContent={"center"} my={12}>

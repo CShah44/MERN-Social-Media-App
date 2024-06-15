@@ -17,12 +17,16 @@ import {
   Text,
   Checkbox,
   VStack,
+  CloseButton,
+  Image,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import useShowToast from "../hooks/useShowToast";
 import { useRecoilState, useRecoilValue } from "recoil";
 import userAtom from "../atoms/userAtom";
 import { conversationsAtom } from "../atoms/conversationAtom";
+import usePreviewImg from "../hooks/usePreviewImg";
+import { BsImageFill } from "react-icons/bs";
 
 const CreateConversationButton = () => {
   const [loadingCreateCon, setLoadingCreateCon] = useState(false);
@@ -39,6 +43,9 @@ const CreateConversationButton = () => {
 
   const { onOpen, onClose, isOpen } = useDisclosure();
   const showToast = useShowToast();
+
+  const fileRef = useRef();
+  const { handleImgChange, imgUrl, setImgUrl } = usePreviewImg();
 
   useEffect(() => {
     const getFollowers = async () => {
@@ -89,11 +96,12 @@ const CreateConversationButton = () => {
         body: JSON.stringify({
           participants: inputs.participants,
           name: inputs.conversationName,
+          groupPhoto: imgUrl,
         }),
       });
 
       const data = await res.json();
-
+      console.log(data);
       if (data.error) return showToast("Error", data.error, "error");
 
       setConvesations([...conversations, data]);
@@ -102,6 +110,8 @@ const CreateConversationButton = () => {
     } finally {
       onClose();
       setLoadingCreateCon(false);
+
+      setImgUrl("");
       setInputs({
         conversationName: "",
         participants: [],
@@ -116,7 +126,7 @@ const CreateConversationButton = () => {
         <ModalContent>
           <ModalHeader>Create a new chat</ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
+          <ModalBody display={"flex"} flexDir={"column"} gap={"2"}>
             <FormControl isRequired>
               <FormLabel>Group name</FormLabel>
               <Input
@@ -131,6 +141,39 @@ const CreateConversationButton = () => {
                 placeholder="Enter a cool name!"
               />
             </FormControl>
+
+            <FormControl>
+              <Input
+                type={"file"}
+                hidden
+                ref={fileRef}
+                onChange={handleImgChange}
+              />
+              <BsImageFill
+                style={{ marginLeft: "5px", cursor: "pointer" }}
+                size={16}
+                onClick={() => fileRef.current.click()}
+              />
+              {imgUrl && (
+                <Flex
+                  mt={5}
+                  w="full"
+                  position={"relative"}
+                  flexDirection={"column"}
+                >
+                  <Text mb={"2"}>Selected Group Photo</Text>
+                  <Image src={imgUrl} alt="Selected image" />
+                  <CloseButton
+                    onClick={() => setImgUrl("")}
+                    bg={"gray.800"}
+                    position={"absolute"}
+                    top={10}
+                    right={2}
+                  />
+                </Flex>
+              )}
+            </FormControl>
+
             <FormControl>
               <CheckboxGroup
                 onChange={(e) => setInputs({ ...inputs, participants: e })}

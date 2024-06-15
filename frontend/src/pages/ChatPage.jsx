@@ -1,11 +1,10 @@
-import { SearchIcon } from "@chakra-ui/icons";
 import {
   Box,
-  Button,
+  // Button,
   Flex,
   Input,
   InputGroup,
-  InputRightElement,
+  // InputRightElement,
   Spinner,
   Text,
   useColorModeValue,
@@ -22,11 +21,11 @@ import { useEffect, useState } from "react";
 import useShowToast from "../hooks/useShowToast";
 
 const ChatPage = () => {
+  const [searchTerm, setSearchTerm] = useState("");
   const [conversations, setConversations] = useRecoilState(conversationsAtom);
   const selectedConversation = useRecoilValue(selectedConversationAtom);
 
   const [loadingConv, setLoadingConv] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
   const [filteredConversations, setFilteredConversations] =
     useState(conversations);
 
@@ -56,17 +55,15 @@ const ChatPage = () => {
     getConv();
   }, [setConversations, showToast]);
 
-  useEffect(() => {
-    if (!searchQuery) return setFilteredConversations(conversations);
-
-    setFilteredConversations(
-      conversations?.filter((conv) =>
-        conv.groupName.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    );
-  }, [searchQuery, conversations]);
-
-  console.log("rerender"); // using that useEffect method is causing re render for search, optimise if further
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setSearchTerm(e.target.value.toLowerCase());
+    const filteredConversations = conversations.filter((conversation) => {
+      const conversationName = conversation.groupName.toLowerCase();
+      return conversationName.includes(searchTerm);
+    });
+    setFilteredConversations(filteredConversations);
+  };
 
   return (
     <Box
@@ -109,15 +106,11 @@ const ChatPage = () => {
               <InputGroup>
                 <Input
                   placeholder="Search for chat"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  type="search"
+                  value={searchTerm}
+                  onChange={handleSearch}
+                  onBlur={() => setSearchTerm("")}
                 />
-                <InputRightElement>
-                  <Button size={"md"}>
-                    <SearchIcon />
-                  </Button>
-                  {/* <Button>Clear</Button> */}
-                </InputRightElement>
               </InputGroup>
             </Flex>
           </form>
@@ -129,19 +122,20 @@ const ChatPage = () => {
               <Spinner />
             </Flex>
           )}
-          {filteredConversations &&
+          {searchTerm &&
+            filteredConversations &&
             !loadingConv &&
             filteredConversations.map((c) => (
               <Conversation conversation={c} key={c._id} />
             ))}
-          {!searchQuery.length &&
-            !loadingConv &&
-            !filteredConversations.length && (
-              <Text size={"sm"}>You have no conversations! Create One!</Text>
-            )}
-          {searchQuery && !filteredConversations.length && (
-            <Text size={"sm"}>No conversations found!</Text>
+          {!searchTerm && !conversations && (
+            <Text size={"sm"}>You have no conversations! Create One!</Text>
           )}
+          {!searchTerm &&
+            conversations &&
+            conversations.map((c) => (
+              <Conversation conversation={c} key={c._id} />
+            ))}
         </Flex>
         {!selectedConversation && (
           <Flex
